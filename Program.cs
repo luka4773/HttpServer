@@ -10,10 +10,11 @@ namespace HttpServer
     {
         static void Main(string[] args)
         {
-            HttpServer http = new HttpServer();
+            HttpServer http = new HttpServer(8080);
             ///Methods for multithreading - command out if you don't want the multithread server to run.
            // http.StaticForMultiThread(http);
            // http.ListenForClients();
+            http.RunServer();
             Console.WriteLine("Server started.");
             
         }
