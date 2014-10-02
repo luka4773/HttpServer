@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -24,19 +25,21 @@ namespace HttpServer
         private Thread listenThread;
         private Thread shutdownThread;
         
+        
+        
 
         /// Most of this project is within 1 constructor so far, switching between different types (dynamic, static, open file etc.) is done @ changing the respective booleans(static/dynamic/openfile etc.)
 
         public HttpServer(int port)
         {
-
+           
             DefaultPort = port;
 
         }
 
         public void RunServer()
         {
-             serverSocket.Start();
+            serverSocket.Start();
             Console.WriteLine("Server is up.");
             Socket sock = serverSocket.AcceptSocket();
             this.shutdownThread = new Thread(new ThreadStart(ListenForShutdown));
