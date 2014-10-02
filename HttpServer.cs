@@ -15,12 +15,15 @@ namespace HttpServer
     {
         private static readonly string RootCatalog = @"C:\Users\Lukas\Documents";
         public static readonly int DefaultPort = 8080;
-        private bool Static = false;
+        private static readonly int ShutdownPort = 8081;
+        private bool Static = true;
         private bool Dynamic = false;
         private bool openFile = false;
         static IPAddress localAddress = IPAddress.Parse("127.0.0.1");
         TcpListener serverSocket = new TcpListener(localAddress, DefaultPort);        
         private Thread listenThread;
+        private Thread shutdownThread;
+        volatile TcpClient tcp = new TcpClient();
         
        /// Most of this project is within 1 constructor so far, switching between different types (dynamic, static, open file etc.) is done @ changing the respective booleans(static/dynamic/openfile etc.)
        
@@ -30,6 +33,9 @@ namespace HttpServer
             serverSocket.Start();
             Console.WriteLine("Server is up.");
             Socket sock = serverSocket.AcceptSocket();
+            this.shutdownThread = new Thread(new ThreadStart(ListenForShutdown));
+            this.shutdownThread.Start();
+            
 
           
 
@@ -37,7 +43,7 @@ namespace HttpServer
             {
                 
                ///Simple static server
-                    TcpClient tcp = serverSocket.AcceptTcpClient();
+                    tcp = serverSocket.AcceptTcpClient();
                     Console.WriteLine("Client connected, lets go.");
                     Stream server = tcp.GetStream();
                     StreamReader sr = new StreamReader(server);
@@ -54,7 +60,7 @@ namespace HttpServer
            while (Dynamic)
            {
                ///Static server with dynamic response, if the request line isn't empty simply split the string after the "/" which is present in every link and show the rest as what we requested. Lenght -5 cause it displays 5 characters that are not needed
-               TcpClient tcp = serverSocket.AcceptTcpClient();
+               tcp = serverSocket.AcceptTcpClient();
                Console.WriteLine("Dynamic client connected, lets go.");
                Stream server = tcp.GetStream();
                StreamReader sr = new StreamReader(server);
@@ -76,7 +82,7 @@ namespace HttpServer
                 while (openFile)
                {
                     ///a bit more complicated but managed to do something with it...always gives a blank page whenever there's an exception. No idea at all why.
-                   TcpClient tcp = serverSocket.AcceptTcpClient();
+                   tcp = serverSocket.AcceptTcpClient();
                    Console.WriteLine("Dynamic client connected, lets go.");
                    Stream server = tcp.GetStream();
                    StreamReader sr = new StreamReader(server);
@@ -127,7 +133,7 @@ namespace HttpServer
         ///Method that runs a simple static server this one writes 100, 000 lines both to console and browser(desktop pc is too fast to have smaller number to test threads)
         public void StaticForMultiThread(object client)
         {
-            TcpClient tcp = serverSocket.AcceptTcpClient();
+            tcp = serverSocket.AcceptTcpClient();
             Console.WriteLine("Client connected, lets go.");
             Stream server = tcp.GetStream();
             StreamReader sr = new StreamReader(server);
@@ -154,16 +160,31 @@ namespace HttpServer
            {
                serverSocket.Start();
                //blocks until a client has connected to the server
-               TcpClient client = this.serverSocket.AcceptTcpClient();
+                tcp = this.serverSocket.AcceptTcpClient();
                this.listenThread = new Thread(new ThreadStart(ListenForClients));
                this.listenThread.Start();
                //create a thread to handle communication 
                //with connected client
                Thread clientThread = new Thread(new ParameterizedThreadStart(StaticForMultiThread));
-               clientThread.Start(client);
+               clientThread.Start(tcp);
            }
        }
 
        
+         TcpListener shutdownSocket = new TcpListener(localAddress, ShutdownPort); 
+        private void ListenForShutdown()
+        {
+             shutdownSocket.Start();
+             TcpClient shutdownClient = this.shutdownSocket.AcceptTcpClient();
+             
+             Console.WriteLine("Shutting down server");
+            Stop();
+         }
+    
+    private void Stop() 
+    {        
+        tcp.Close();
+        System.Environment.Exit(1);
+    }
     }
 }
