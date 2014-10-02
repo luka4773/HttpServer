@@ -19,7 +19,8 @@ namespace HttpServer
         private bool Dynamic = false;
         private bool openFile = true;
         
-      
+       /// Most of this project is within 1 constructor so far, switching between different types (dynamic, static, open file etc.) is done @ changing the respective booleans(static/dynamic/openfile etc.)
+       
        public  HttpServer()
         {
             IPAddress localAddress = IPAddress.Parse("127.0.0.1");
@@ -31,7 +32,7 @@ namespace HttpServer
             while (Static)
             {
                 
-               
+               ///Simple static server
                     TcpClient tcp = serverSocket.AcceptTcpClient();
                     Console.WriteLine("Client connected, lets go.");
                     Stream server = tcp.GetStream();
@@ -48,6 +49,7 @@ namespace HttpServer
 
            while (Dynamic)
            {
+               ///Static server with dynamic response, if the request line isn't empty simply split the string after the "/" which is present in every link and show the rest as what we requested. Lenght -5 cause it displays 5 characters that are not needed
                TcpClient tcp = serverSocket.AcceptTcpClient();
                Console.WriteLine("Dynamic client connected, lets go.");
                Stream server = tcp.GetStream();
@@ -69,6 +71,7 @@ namespace HttpServer
 
                 while (openFile)
                {
+                    ///a bit more complicated but managed to do something with it...always gives a blank page whenever there's an exception. No idea at all why.
                    TcpClient tcp = serverSocket.AcceptTcpClient();
                    Console.WriteLine("Dynamic client connected, lets go.");
                    Stream server = tcp.GetStream();
@@ -82,21 +85,32 @@ namespace HttpServer
                    try
                    {
                        FileStream stream = new FileStream(fullfile, FileMode.Open, FileAccess.Read);
+                       sw.Write("HTTP/1.0 200 OK");
+                       sw.Write("\r\n");
+                       sw.Flush();
                        stream.CopyTo(sw.BaseStream);
                        stream.Close();
+                       
                    }
                    catch (FileNotFoundException)
                    {
-                       sw.Write("HTTP/1.0 404 Not Found\n\r");
+                       sw.Write("HTTP/1.0 404 Not Found");
                        sw.Write("\r\n");
                        sw.Flush();
                    }
                    catch (DirectoryNotFoundException)
                    {
-                       sw.Write("HTTP/1.0 404 Not Found\n\r");
+                       sw.Write("HTTP/1.0 404 Directory Not Found");
                        sw.Write("\r\n");
                        sw.Flush();
                    }
+                   catch (Exception)
+                   {
+                       sw.Write("HTTP/1.0 400 Illegal request");
+                       sw.Write("\r\n");
+                       sw.Flush();
+                   }
+                  
                    sw.AutoFlush = true;
                    tcp.Close();
                }
