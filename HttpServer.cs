@@ -17,17 +17,21 @@ namespace HttpServer
         public static readonly int DefaultPort = 8080;
         private bool Static = false;
         private bool Dynamic = false;
-        private bool openFile = true;
+        private bool openFile = false;
+        static IPAddress localAddress = IPAddress.Parse("127.0.0.1");
+        TcpListener serverSocket = new TcpListener(localAddress, DefaultPort);        
+        private Thread listenThread;
         
        /// Most of this project is within 1 constructor so far, switching between different types (dynamic, static, open file etc.) is done @ changing the respective booleans(static/dynamic/openfile etc.)
        
        public  HttpServer()
         {
-            IPAddress localAddress = IPAddress.Parse("127.0.0.1");
-            TcpListener serverSocket = new TcpListener(localAddress, DefaultPort);
+            
             serverSocket.Start();
             Console.WriteLine("Server is up.");
             Socket sock = serverSocket.AcceptSocket();
+
+          
 
             while (Static)
             {
@@ -38,7 +42,7 @@ namespace HttpServer
                     Stream server = tcp.GetStream();
                     StreamReader sr = new StreamReader(server);
                     StreamWriter sw = new StreamWriter(server);
-                    sw.Write("Hey, the time of your connection was: " + DateTime.Now);
+                    sw.Write("Hey, the time of your connection was: " + DateTime.Now);                                   
                     string request = sr.ReadLine();
                     
                     sw.AutoFlush = true;
@@ -119,6 +123,47 @@ namespace HttpServer
                
            
         }
-     
+
+        ///Method that runs a simple static server this one writes 100, 000 lines both to console and browser(desktop pc is too fast to have smaller number to test threads)
+        public void StaticForMultiThread(object client)
+        {
+            TcpClient tcp = serverSocket.AcceptTcpClient();
+            Console.WriteLine("Client connected, lets go.");
+            Stream server = tcp.GetStream();
+            StreamReader sr = new StreamReader(server);
+            StreamWriter sw = new StreamWriter(server);
+            /// 100, 000 for testing purposes, seems to be working ;)
+            for (var i = 0; i < 100000; i++)
+            {
+                sw.Write("Hey, the time of your connection was: " + DateTime.Now + "\n");
+                Console.WriteLine("Hey, they time of your connection was: " + DateTime.Now + "\n");
+            }
+
+            string request = sr.ReadLine();
+
+            sw.AutoFlush = true;
+            tcp.Close();
+        }
+
+        ///Method that accepts incoming clients and creates new threads for them as they come.
+       public void ListenForClients()
+       {
+         
+
+           while (true)
+           {
+               serverSocket.Start();
+               //blocks until a client has connected to the server
+               TcpClient client = this.serverSocket.AcceptTcpClient();
+               this.listenThread = new Thread(new ThreadStart(ListenForClients));
+               this.listenThread.Start();
+               //create a thread to handle communication 
+               //with connected client
+               Thread clientThread = new Thread(new ParameterizedThreadStart(StaticForMultiThread));
+               clientThread.Start(client);
+           }
+       }
+
+       
     }
 }
