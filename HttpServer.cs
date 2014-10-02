@@ -27,7 +27,7 @@ namespace HttpServer
             while (true)
             {
                 TcpClient tcp = serverSocket.AcceptTcpClient();
-                Console.WriteLine("Client connected");
+                Console.WriteLine("Client connected, lets go.");
                 Stream server = tcp.GetStream();
                 StreamReader sr = new StreamReader(server);
                 StreamWriter sw = new StreamWriter(server);
