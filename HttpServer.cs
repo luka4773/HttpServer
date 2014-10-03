@@ -22,37 +22,28 @@ namespace HttpServer
         private bool openFile = true;
         private bool shutdown = true;
         static IPAddress localAddress = IPAddress.Parse("127.0.0.1");
-        TcpListener serverSocket = new TcpListener(localAddress, DefaultPort);        
+        TcpListener serverSocket = new TcpListener(localAddress, DefaultPort);
+        TcpListener shutdownSocket = new TcpListener(localAddress, ShutdownPort);
         private Thread listenThread;
         private Thread shutdownThread;
-        
-        
-        
-
-        /// Most of this project is within 1 constructor so far, switching between different types (dynamic, static, open file etc.) is done @ changing the respective booleans(static/dynamic/openfile etc.)
-
+               
+        /// Most of this project is within 1 constructor, switching between different types (dynamic, static, open file etc.) is done @ changing the respective booleans(static/dynamic/openfile etc.)
         public HttpServer(int port)
-        {
-           
+        {           
             DefaultPort = port;
-
         }
 
         public void RunServer()
         {
             serverSocket.Start();
             Console.WriteLine("Server is up.");
-            Program.Log.WriteEntry("Server started.");  
+            Program.Log.WriteEntry("Server started.");
             this.shutdownThread = new Thread(new ThreadStart(ListenForShutdown));
             this.shutdownThread.Start();
-            
-
-          
 
             while (Static)
-            {
-                
-               ///Simple static server
+            {               
+                    ///Simple static server
                     TcpClient tcp = serverSocket.AcceptTcpClient();
                     Console.WriteLine("Client connected, lets go.");
                     Program.Log.WriteEntry("Client request received.");
@@ -60,29 +51,24 @@ namespace HttpServer
                     Program.Log.WriteEntry("Static server started.");
                     StreamReader sr = new StreamReader(server);
                     StreamWriter sw = new StreamWriter(server);
-
                     sw.Write("Hey, the time of your connection was: " + DateTime.Now);                                   
                     string request = sr.ReadLine();
-                    Program.Log.WriteEntry("Response sent to client.");
-                    
+                    Program.Log.WriteEntry("Response sent to client.");                    
                     sw.AutoFlush = true;
-                    tcp.Close();
-                
-
+                    tcp.Close();               
             }
 
            while (Dynamic)
            {
                ///Static server with dynamic response, if the request line isn't empty simply split the string after the "/" which is present in every link and show the rest as what we requested. Lenght -5 cause it displays 5 characters that are not needed
-              TcpClient tcp = serverSocket.AcceptTcpClient();
+               TcpClient tcp = serverSocket.AcceptTcpClient();
                Console.WriteLine("Dynamic client connected, lets go.");
                Program.Log.WriteEntry("Dynamic server started.");
                Stream server = tcp.GetStream();
                StreamReader sr = new StreamReader(server);
                StreamWriter sw = new StreamWriter(server);
                string s = sr.ReadLine();
-               Program.Log.WriteEntry("Client request received.");
-             
+               Program.Log.WriteEntry("Client request received.");            
                if (s != null)
                {
                    s = s.Split('/')[1];
@@ -95,9 +81,8 @@ namespace HttpServer
                tcp.Close();
            }
 
-
-                while (openFile)
-               {
+           while (openFile)
+           {
                     ///a bit more complicated but managed to do something with it...
                    TcpClient tcp = serverSocket.AcceptTcpClient();
                    Console.WriteLine("Dynamic client connected, lets go.");
@@ -115,6 +100,7 @@ namespace HttpServer
                        tcp.Close();
                        continue;
                    }
+                    ///split request string, get file path from rootcatalog + request string read file in the specified file path.
                    string[] file = s.Split('/');
                    string filename = file[1];
                    string fullfile = RootCatalog + filename;
@@ -122,63 +108,41 @@ namespace HttpServer
                    Console.WriteLine(fullfile);
                    FileStream stream = null;
                    try
-                   {
-                      
+                   {                     
                        stream = new FileStream(fullfile, FileMode.Open, FileAccess.Read);
                        Program.Log.WriteEntry("Response sent to client.");
                        Console.WriteLine(fullfile);
-                    
-                       sw.Write("HTTP/1.0 200 OK\r\n");
-                    
-                                             
-                       
+                       sw.Write("HTTP/1.0 200 OK\r\n");                     
                        stream.CopyTo(sw.BaseStream);
-                       stream.Close();
-                       
-
+                       stream.Close();                       
                    }
                    catch (FileNotFoundException)
                    {
                        Console.WriteLine("exception");
                        sw.Write("HTTP/1.0 404 Not Found");
                        sw.Write("\r\n");
-                       sw.Write("HTTP/1.0 404 Not found");
-                       
-                       
-                      
-                       
+                       sw.Write("HTTP/1.0 404 Not found");                                                                                          
                    }
                    catch (DirectoryNotFoundException)
                    {
                        Console.WriteLine("exception2");
                        sw.Write("HTTP/1.0 404 Directory Not Found");
                        sw.Write("\r\n");
-                       sw.Write("Directory not found.");
-                       
+                       sw.Write("Directory not found.");                      
                    }
                    catch (Exception)
                    {
                        Console.WriteLine("exception3");
                        sw.Write("HTTP/1.0 400 Illegal request");
                        sw.Write("\r\n");
-                       sw.Write("Illegal request.");
-                       
+                       sw.Write("Illegal request.");                       
                    }
                    finally
                    {
-                       Console.WriteLine("finally");
-                       
-                       tcp.Close();
-                       
-                       
-                   }
-                   
-               }
-           
-              
-               
-           
-        
+                       Console.WriteLine("finally");                       
+                       tcp.Close();                                              
+                   }              
+            }     
         }
 
        
@@ -201,8 +165,6 @@ namespace HttpServer
             }
             Program.Log.WriteEntry("Response sent to client.");
             string request = sr.ReadLine();
-            
-
             sw.AutoFlush = true;
             tcp.Close();
         }
@@ -210,25 +172,20 @@ namespace HttpServer
         ///Method that accepts incoming clients and creates new threads for them as they come.
        public void ListenForClients()
        {
-
            serverSocket.Start();
            while (shutdown)
-           {
-               
+           {              
                Program.Log.WriteEntry("Litenforclients for multithreaded server started.");
-               //blocks until a client has connected to the server
+               ///blocks until a client has connected to the server
                TcpClient tcp = this.serverSocket.AcceptTcpClient();
                this.listenThread = new Thread(new ThreadStart(ListenForClients));
                this.listenThread.Start();
-               //create a thread to handle communication 
-               //with connected client
+               ///create a thread to handle communication 
+               ///with connected client
                Thread clientThread = new Thread(new ParameterizedThreadStart(StaticForMultiThread));
                clientThread.Start(tcp);
            }
-       }
-
-       
-         TcpListener shutdownSocket = new TcpListener(localAddress, ShutdownPort); 
+       }         
         private void ListenForShutdown()
         {
              shutdownSocket.Start();
@@ -237,10 +194,11 @@ namespace HttpServer
              Console.WriteLine("Shutting down server");
             Stop();
          }
-    
+   
     public void Stop() 
     {
-
+        ///"graceful" shutdown(not really...)
+        ///stop server from accepting anymore clients, send fake request to shut the server down.
         Static = false;
         Dynamic = false;
         openFile = false;
