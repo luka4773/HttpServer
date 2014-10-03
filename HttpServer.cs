@@ -105,6 +105,7 @@ namespace HttpServer
                    Program.Log.WriteEntry("OpenFile server started.");
                    StreamReader sr = new StreamReader(server);
                    StreamWriter sw = new StreamWriter(server);
+                   sw.AutoFlush = true;
                    string s = sr.ReadLine();
                    Program.Log.WriteEntry("Client request received.");
                    Console.WriteLine("asdad: " + s);
@@ -122,10 +123,14 @@ namespace HttpServer
                    FileStream stream = null;
                    try
                    {
+                      
                        stream = new FileStream(fullfile, FileMode.Open, FileAccess.Read);
                        Program.Log.WriteEntry("Response sent to client.");
                        Console.WriteLine(fullfile);
-                       sw.Write("HTTP/1.0 200 OK");                       
+                    
+                       sw.Write("HTTP/1.0 200 OK\r\n");
+                    
+                                             
                        
                        stream.CopyTo(sw.BaseStream);
                        stream.Close();
@@ -137,7 +142,7 @@ namespace HttpServer
                        Console.WriteLine("exception");
                        sw.Write("HTTP/1.0 404 Not Found");
                        sw.Write("\r\n");
-                       sw.Write("404 File not found");
+                       sw.Write("HTTP/1.0 404 Not found");
                        
                        
                       
@@ -162,7 +167,7 @@ namespace HttpServer
                    finally
                    {
                        Console.WriteLine("finally");
-                       sw.AutoFlush = true;
+                       
                        tcp.Close();
                        
                        
