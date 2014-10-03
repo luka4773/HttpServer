@@ -13,15 +13,17 @@ namespace UnitTestsByAnders
     [TestClass]
    public class HttpServerTest
     {
-        private static HttpServer.HttpServer server;
+      //  private static HttpServer.HttpServer _server;
         private const string CrLf = "\r\n";
 
-        [ClassInitialize]
+      /*  [ClassInitialize]
         public static void StartServer(TestContext context)
         {
-           server = new HttpServer.HttpServer(8080);
-           Task.Factory.StartNew(server.RunServer);
+           _server = new HttpServer.HttpServer(8080);
+           Task.Factory.StartNew(_server.RunServer);     
+          
         }
+       */
          
 
         [TestMethod]
@@ -63,11 +65,7 @@ namespace UnitTestsByAnders
             Assert.AreEqual("HTTP/1.0 200 xxx", line);
         }
 
-        [ClassCleanup]
-        public static void StopServer()
-        {
-            server.Stop();
-        }
+       
         
         /// <summary>
         /// Private helper method
@@ -93,6 +91,12 @@ namespace UnitTestsByAnders
             return firstline;
 
         }
+      /*  [ClassCleanup]
+        public static void StopServer()
+        {
+            _server.Stop();
+        }
+       */
     }
 }
 
