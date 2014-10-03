@@ -13,19 +13,15 @@ namespace UnitTestsByAnders
     [TestClass]
    public class HttpServerTest
     {
-      //  private static HttpServer.HttpServer _server;
+        private static HttpServer.HttpServer _server;
         private const string CrLf = "\r\n";
 
-      /*  [ClassInitialize]
+        [ClassInitialize]
         public static void StartServer(TestContext context)
         {
            _server = new HttpServer.HttpServer(8080);
-           Task.Factory.StartNew(_server.RunServer);     
-          
+           Task.Factory.StartNew(_server.RunServer);              
         }
-       */
-         
-
         [TestMethod]
         public void TestGet()
         {
@@ -35,7 +31,6 @@ namespace UnitTestsByAnders
             line = GetFirstLine("GET /fileDoesNotExist.txt HTTP/1.0");
             Assert.AreEqual("HTTP/1.0 404 Not Found", line);
         }
-
 
         [TestMethod]
         public void TestGetIllegalRequest()
@@ -63,10 +58,7 @@ namespace UnitTestsByAnders
         {
             String line = GetFirstLine("POST /file.txt HTTP/1.0");
             Assert.AreEqual("HTTP/1.0 200 xxx", line);
-        }
-
-       
-        
+        }        
         /// <summary>
         /// Private helper method
         /// </summary>
@@ -91,12 +83,12 @@ namespace UnitTestsByAnders
             return firstline;
 
         }
-      /*  [ClassCleanup]
+        [ClassCleanup]
         public static void StopServer()
         {
             _server.Stop();
         }
-       */
+       
     }
 }
 
