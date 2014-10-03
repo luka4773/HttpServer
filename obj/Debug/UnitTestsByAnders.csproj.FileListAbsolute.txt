@@ -1,0 +1,7 @@
+c:\Users\Lukas\Documents\Visual Studio 2013\Projects\HttpServer\UnitTestsByAnders\obj\Debug\UnitTestsByAnders.csprojResolveAssemblyReference.cache
+c:\Users\Lukas\Documents\Visual Studio 2013\Projects\HttpServer\UnitTestsByAnders\bin\Debug\UnitTestsByAnders.dll
+c:\Users\Lukas\Documents\Visual Studio 2013\Projects\HttpServer\UnitTestsByAnders\bin\Debug\UnitTestsByAnders.pdb
+c:\Users\Lukas\Documents\Visual Studio 2013\Projects\HttpServer\UnitTestsByAnders\bin\Debug\HttpServer.exe
+c:\Users\Lukas\Documents\Visual Studio 2013\Projects\HttpServer\UnitTestsByAnders\bin\Debug\HttpServer.pdb
+c:\Users\Lukas\Documents\Visual Studio 2013\Projects\HttpServer\UnitTestsByAnders\obj\Debug\UnitTestsByAnders.dll
+c:\Users\Lukas\Documents\Visual Studio 2013\Projects\HttpServer\UnitTestsByAnders\obj\Debug\UnitTestsByAnders.pdb
